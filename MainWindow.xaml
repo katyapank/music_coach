@@ -1,0 +1,29 @@
+﻿<Window x:Class="OSNK_1_wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:OSNK_1_wpf"
+        mc:Ignorable="d"
+        Title="Тренажёр" Height="450" Width="800" ShowInTaskbar="False" ResizeMode="CanMinimize" WindowStyle="ThreeDBorderWindow">
+    <Grid x:Name="grid1" Background="White">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="411*"></RowDefinition>
+            <RowDefinition Height="23*"/>
+        </Grid.RowDefinitions>
+        <TextBox x:Name="targetTB" HorizontalAlignment="Left" Margin="203,84,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="163" Height="48"/>
+        <Button x:Name="menuB" Content="Button" HorizontalAlignment="Left" Margin="463,10,0,0" VerticalAlignment="Top" Width="298" Height="43"/>
+        <ComboBox x:Name="partB" HorizontalAlignment="Left" Margin="463,169,0,0" VerticalAlignment="Top" Width="215" Height="48"/>
+        <ComboBox x:Name="minusB" HorizontalAlignment="Left" Margin="463,84,0,0" VerticalAlignment="Top" Width="215" Height="48"/>
+        <CheckBox x:Name="listenCB" Content="CheckBox" HorizontalAlignment="Left" Margin="463,310,0,0" VerticalAlignment="Top" Height="32" Width="128"/>
+        <Slider x:Name="volS" HorizontalAlignment="Left" Margin="463,255,0,0" VerticalAlignment="Top" Width="215" Height="39" />
+        <CheckBox x:Name="logCB" Content="CheckBox" HorizontalAlignment="Left" Margin="463,347,0,0" VerticalAlignment="Top" Height="32" Width="128"/>
+        <Label x:Name="tempL" Content="Label" HorizontalAlignment="Left" Margin="203,169,0,0" VerticalAlignment="Top" Height="48" Width="163"/>
+        <Button x:Name="startB" Content="Начать запись" HorizontalAlignment="Left" Margin="40,316,0,0" VerticalAlignment="Top" Width="326" Height="47" />
+        <ComboBox x:Name="modeCB" HorizontalAlignment="Left" Margin="203,239,0,0" VerticalAlignment="Top" Width="163" Height="48"/>
+
+    </Grid>
+</Window>
