@@ -16,6 +16,9 @@ using NAudio.Wave;
 using System.Numerics;
 using MathNet.Numerics.IntegralTransforms;
 using ZedGraph;
+using System.IO;
+using System.Diagnostics.Metrics;
+using System.Diagnostics;
 
 namespace OSNK_1_wpf
 {
@@ -30,11 +33,19 @@ namespace OSNK_1_wpf
         static int N; //Длина сигнала (точек)
         static double Fn = Fs / 2;// Частота Найквиста
         WaveIn waveIn;
+        private List<double> all_freqs = new List<double>();
+        bool recording_new_song = false;
+        bool sing_a_song = false;
+        int count = 0;
+        System.Media.SoundPlayer sp = new System.Media.SoundPlayer("back2.wav");
+        List<string> notes = new List<string>();
+        List<double> noteVal = new List<double>();
+        bool noteMode = true;
 
         public MainWindow()
         {
             InitializeComponent();
-            foreach(UIElement el in grid1.Children)
+            foreach (UIElement el in grid1.Children)
             {
                 if (el is Button)
                 {
@@ -53,6 +64,27 @@ namespace OSNK_1_wpf
                     ((Slider)el).ValueChanged += Slider_ValueChanged;
                 }
             }
+
+            string filePath = "notes1.csv";
+            StreamReader reader = null;
+            if (File.Exists(filePath))
+            {
+                reader = new StreamReader(File.OpenRead(filePath));
+                while (!reader.EndOfStream)
+                {
+                    var line = reader.ReadLine();
+                    var values = line.Split(';');
+                    int k = 0;
+                    foreach (var item in values)
+                    {
+                        if (k++%2==0)
+                            notes.Add(item);
+                        else
+                            noteVal.Add(Convert.ToDouble(item));
+                    }
+
+                }
+            }
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -62,7 +94,14 @@ namespace OSNK_1_wpf
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-
+            if (modeCB.SelectedIndex == 0)
+            {
+                noteMode = true;
+            }
+            else if (modeCB.SelectedIndex == 1)
+            {
+                noteMode = false;
+            }
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -77,6 +116,24 @@ namespace OSNK_1_wpf
                 if (rec == false)
                 {
                     rec = true;
+                    if (recording_new_song)
+                        all_freqs.Clear();
+
+                    if (sing_a_song)
+                    {
+                        count = 0;
+                        all_freqs.Clear();
+                        StreamReader sr = new StreamReader("song.txt");
+                        while (!sr.EndOfStream)
+                        {
+                            all_freqs.Add(Convert.ToDouble(sr.ReadLine()));
+                        }
+                        
+                    }
+                    if (recording_new_song || sing_a_song)
+                        sp.Play();
+
+
                     this.waveIn = new WaveIn();
                     this.waveIn.DeviceNumber = 0;
                     this.waveIn.DataAvailable += this.waveIn_DataAvailable;
@@ -87,10 +144,15 @@ namespace OSNK_1_wpf
                 }
                 else
                 {
+                    if (sing_a_song || recording_new_song)
+                        sp.Stop();
+
                     rec = false;
                     this.stop_recording();
                     ((Button)e.OriginalSource).Content = "Начать запись";
                     tempL.Foreground = new SolidColorBrush(Colors.Black);
+
+                    File.WriteAllLines("song.txt", all_freqs.ConvertAll(x => x.ToString()));
                 }
             }
         }
@@ -129,6 +191,8 @@ namespace OSNK_1_wpf
         }
         private void write(Complex[] signal)
         {
+            var sw = new Stopwatch();
+            sw.Start();
             PointPairList list1 = new PointPairList();
             int max_index = 0;
             double freq = 0;
@@ -145,15 +209,52 @@ namespace OSNK_1_wpf
                     max_index = list1.IndexOf(i);
                 }
             }
-            //list1[max_index].Y = list1[max_index].Y;
-            freq = list1[max_index].X;
-            string s = ((int)freq).ToString();
-            if (list1[max_index].Y > 0.001)
-                tempL.Content = s;
-            else
-                tempL.Content = "-";
 
-            if (targetTB.Text != "")
+
+            freq = list1[max_index].X;
+            string s = "";
+            if (!noteMode)
+                s = ((int)freq).ToString();
+            else
+            {
+                double k = noteVal.OrderBy(x => Math.Abs(x - freq)).ElementAt(0);
+                s = notes[noteVal.IndexOf(k)];
+            }
+
+            if (list1[max_index].Y > 0.001)
+            {
+                tempL.Content = s;
+                if (recording_new_song)
+                    all_freqs.Add(freq);
+            }
+            else
+            {
+                tempL.Content = "-";
+                if (recording_new_song)
+                    all_freqs.Add(0);
+            }
+
+            if (sing_a_song && count < all_freqs.Count)
+            {
+                if (!noteMode)
+                    targetTB.Text = all_freqs[count].ToString();
+                else
+                {
+                    double k = noteVal.OrderBy(x => Math.Abs(x - all_freqs[count])).ElementAt(0);
+                    if (all_freqs[count] > 15)
+                        targetTB.Text = notes[noteVal.IndexOf(k)];
+                    else
+                        targetTB.Text = "0";
+                }
+            }
+            else if (count == all_freqs.Count-1)
+            {
+                targetTB.Text = "0";
+            }
+
+            ++count;
+
+            if (!sing_a_song && !recording_new_song && targetTB.Text != "" && !noteMode)
             {
                 if (Math.Abs(freq - Convert.ToInt16(targetTB.Text)) < 15){
                     tempL.Foreground = new SolidColorBrush(Colors.Green);
@@ -163,6 +264,15 @@ namespace OSNK_1_wpf
                     tempL.Foreground = new SolidColorBrush(Colors.Red);
                 }
             }
+            else if (sing_a_song && all_freqs.Count >= count) { 
+                if (Math.Abs(all_freqs[count-1] - freq) < 20)
+                    tempL.Foreground = new SolidColorBrush(Colors.Green);
+                else
+                    tempL.Foreground = new SolidColorBrush(Colors.Red);
+            }
+
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed);
         }
     }
 }

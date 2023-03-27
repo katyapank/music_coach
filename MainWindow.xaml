@@ -23,7 +23,10 @@
         <CheckBox x:Name="logCB" Content="CheckBox" HorizontalAlignment="Left" Margin="463,347,0,0" VerticalAlignment="Top" Height="32" Width="128"/>
         <Label x:Name="tempL" Content="Label" HorizontalAlignment="Left" Margin="203,169,0,0" VerticalAlignment="Top" Height="48" Width="163"/>
         <Button x:Name="startB" Content="Начать запись" HorizontalAlignment="Left" Margin="40,316,0,0" VerticalAlignment="Top" Width="326" Height="47" />
-        <ComboBox x:Name="modeCB" HorizontalAlignment="Left" Margin="203,239,0,0" VerticalAlignment="Top" Width="163" Height="48"/>
+        <ComboBox x:Name="modeCB" HorizontalAlignment="Left" Margin="285,241,0,0" VerticalAlignment="Top" Width="81" Height="22" SelectedIndex="0">
+            <ComboBoxItem Content="Ноты"/>
+            <ComboBoxItem Content="Частоты"/>
+        </ComboBox>
 
     </Grid>
 </Window>
