@@ -127,7 +127,7 @@ namespace OSNK_1_wpf
                     {
                         count = 0;
                         all_freqs.Clear();
-                        StreamReader sr = new StreamReader("song.txt");
+                        StreamReader sr = new StreamReader(chosenPath.Substring(0, chosenPath.Length - 4) + ".txt");
                         while (!sr.EndOfStream)
                         {
                             all_freqs.Add(Convert.ToDouble(sr.ReadLine()));
@@ -159,7 +159,7 @@ namespace OSNK_1_wpf
                     ((Button)e.OriginalSource).Content = "Начать запись";
                     tempL.Foreground = new SolidColorBrush(Colors.Black);
 
-                    File.WriteAllLines("song.txt", all_freqs.ConvertAll(x => x.ToString()));
+                    File.WriteAllLines(chosenPath.Substring(0,chosenPath.Length-4)+".txt", all_freqs.ConvertAll(x => x.ToString()));
                 }
             }
             else if (((Button)e.OriginalSource).Name == "menuB")

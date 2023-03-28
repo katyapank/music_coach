@@ -25,6 +25,7 @@ namespace OSNK_1_wpf
     {
         public string chosenSongPath = "";
         string[] files;
+        List<string> paths = new List<string>();
         class Songs
         {
             public Songs(string Song, int Level)
@@ -54,13 +55,17 @@ namespace OSNK_1_wpf
 
             foreach (var file in files)
             {
-                string[] temp = file.Split('_');
-                string songName = temp[0].Substring(temp[0].IndexOf('\\') + 1);
-                if (songName.Length > 26)
+                if (file.Substring(file.Length - 3) == "wav")
                 {
-                    songName = songName.Substring(0, 24) + "..";
+                    paths.Add(file);
+                    string[] temp = file.Split('_');
+                    string songName = temp[0].Substring(temp[0].IndexOf('\\') + 1);
+                    if (songName.Length > 26)
+                    {
+                        songName = songName.Substring(0, 24) + "..";
+                    }
+                    songs.Add(new Songs(songName, temp[1][0] - 48));
                 }
-                songs.Add(new Songs(songName, temp[1][0]-48));
 
             }
 
@@ -72,7 +77,7 @@ namespace OSNK_1_wpf
         {
             int index = songL.SelectedIndex;
 
-            chosenSongPath = files[index];
+            chosenSongPath = paths[index];
 
             this.Close();
 
