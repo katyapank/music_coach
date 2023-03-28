@@ -167,8 +167,11 @@ namespace OSNK_1_wpf
                 songsList songMenu = new songsList();
                 songMenu.ShowDialog();
                 chosenPath = songMenu.chosenSongPath;
-                string k = chosenPath.Substring(chosenPath.IndexOf('\\') + 1);
-                menuB.Content = k.Substring(0, k.IndexOf('_'));
+                if (chosenPath != "")
+                {
+                    string k = chosenPath.Substring(chosenPath.IndexOf('\\') + 1);
+                    menuB.Content = k.Substring(0, k.IndexOf('_'));
+                }
             }
         }
         void waveIn_DataAvailable(object sender, WaveInEventArgs e)
