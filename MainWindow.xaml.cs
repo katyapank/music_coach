@@ -229,7 +229,7 @@ namespace OSNK_1_wpf
             }
 
 
-            freq = list1[max_index].X;
+            freq = list1[max_index].X;  //  иногда здесь выдаёт ошибку ... 
             string s = "";
             if (!noteMode)
                 s = ((int)freq).ToString();
