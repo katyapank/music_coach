@@ -42,3 +42,9 @@ C:\Users\ccoo0\source\repos\OSNK-1-wpf\OSNK-1-wpf\bin\Debug\net6.0-windows\tr\Ze
 C:\Users\ccoo0\source\repos\OSNK-1-wpf\OSNK-1-wpf\bin\Debug\net6.0-windows\zh-cn\ZedGraph.resources.dll
 C:\Users\ccoo0\source\repos\OSNK-1-wpf\OSNK-1-wpf\bin\Debug\net6.0-windows\zh-tw\ZedGraph.resources.dll
 C:\Users\ccoo0\source\repos\OSNK-1-wpf\OSNK-1-wpf\obj\Debug\net6.0-windows\OSNK-1-wpf.csproj.CopyComplete
+C:\Users\ccoo0\source\repos\OSNK-1-wpf\OSNK-1-wpf\bin\Debug\net6.0-windows\MaterialDesignColors.dll
+C:\Users\ccoo0\source\repos\OSNK-1-wpf\OSNK-1-wpf\bin\Debug\net6.0-windows\MaterialDesignThemes.Wpf.dll
+C:\Users\ccoo0\source\repos\OSNK-1-wpf\OSNK-1-wpf\bin\Debug\net6.0-windows\Microsoft.Xaml.Behaviors.dll
+C:\Users\ccoo0\source\repos\OSNK-1-wpf\OSNK-1-wpf\obj\Debug\net6.0-windows\App.baml
+C:\Users\ccoo0\source\repos\OSNK-1-wpf\OSNK-1-wpf\obj\Debug\net6.0-windows\songsList.g.cs
+C:\Users\ccoo0\source\repos\OSNK-1-wpf\OSNK-1-wpf\obj\Debug\net6.0-windows\songsList.baml

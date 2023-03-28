@@ -20,6 +20,7 @@ using System.IO;
 using System.Diagnostics.Metrics;
 using System.Diagnostics;
 
+
 namespace OSNK_1_wpf
 {
     /// <summary>
@@ -38,6 +39,7 @@ namespace OSNK_1_wpf
         bool sing_a_song = false;
         int count = 0;
         System.Media.SoundPlayer sp = new System.Media.SoundPlayer("back2.wav");
+
         List<string> notes = new List<string>();
         List<double> noteVal = new List<double>();
         bool noteMode = true;
@@ -154,6 +156,11 @@ namespace OSNK_1_wpf
 
                     File.WriteAllLines("song.txt", all_freqs.ConvertAll(x => x.ToString()));
                 }
+            }
+            else if (((Button)e.OriginalSource).Name == "menuB")
+            {
+                songsList songMenu = new songsList();
+                songMenu.Show();
             }
         }
         void waveIn_DataAvailable(object sender, WaveInEventArgs e)

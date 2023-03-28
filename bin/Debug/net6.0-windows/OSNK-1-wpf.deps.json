@@ -8,12 +8,33 @@
     ".NETCoreApp,Version=v6.0": {
       "OSNK-1-wpf/1.0.0": {
         "dependencies": {
+          "MaterialDesignThemes": "4.8.0",
           "MathNet.Numerics": "5.0.0",
           "NAudio": "2.1.0",
           "ZedGraph": "5.1.7"
         },
         "runtime": {
           "OSNK-1-wpf.dll": {}
+        }
+      },
+      "MaterialDesignColors/2.1.2": {
+        "runtime": {
+          "lib/net6.0/MaterialDesignColors.dll": {
+            "assemblyVersion": "2.1.2.0",
+            "fileVersion": "2.1.2.0"
+          }
+        }
+      },
+      "MaterialDesignThemes/4.8.0": {
+        "dependencies": {
+          "MaterialDesignColors": "2.1.2",
+          "Microsoft.Xaml.Behaviors.Wpf": "1.1.39"
+        },
+        "runtime": {
+          "lib/net6.0/MaterialDesignThemes.Wpf.dll": {
+            "assemblyVersion": "4.8.0.0",
+            "fileVersion": "4.8.0.0"
+          }
         }
       },
       "MathNet.Numerics/5.0.0": {
@@ -29,6 +50,14 @@
         "dependencies": {
           "System.Security.AccessControl": "4.7.0",
           "System.Security.Principal.Windows": "4.7.0"
+        }
+      },
+      "Microsoft.Xaml.Behaviors.Wpf/1.1.39": {
+        "runtime": {
+          "lib/net5.0-windows7.0/Microsoft.Xaml.Behaviors.dll": {
+            "assemblyVersion": "1.1.0.0",
+            "fileVersion": "1.1.39.4716"
+          }
         }
       },
       "NAudio/2.1.0": {
@@ -176,6 +205,20 @@
       "serviceable": false,
       "sha512": ""
     },
+    "MaterialDesignColors/2.1.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-7hf7MLRB6JXHj+IOLh3z2L9yBr58QhgpWQXyvffAoWdSamVO+DMEp3DqdWds0R5Rf6dp9yQ9hYUZ+wSsVZG1nQ==",
+      "path": "materialdesigncolors/2.1.2",
+      "hashPath": "materialdesigncolors.2.1.2.nupkg.sha512"
+    },
+    "MaterialDesignThemes/4.8.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-rJDuWrSIqK+sA/RvZlJTlPF9Yp2YBdEZdiDtSHG/CEumkqJPMSewGga2pWF9gnRHkS5D7UWPaRRmT11Wb7F2Cw==",
+      "path": "materialdesignthemes/4.8.0",
+      "hashPath": "materialdesignthemes.4.8.0.nupkg.sha512"
+    },
     "MathNet.Numerics/5.0.0": {
       "type": "package",
       "serviceable": true,
@@ -196,6 +239,13 @@
       "sha512": "sha512-KSrRMb5vNi0CWSGG1++id2ZOs/1QhRqROt+qgbEAdQuGjGrFcl4AOl4/exGPUYz2wUnU42nvJqon1T3U0kPXLA==",
       "path": "microsoft.win32.registry/4.7.0",
       "hashPath": "microsoft.win32.registry.4.7.0.nupkg.sha512"
+    },
+    "Microsoft.Xaml.Behaviors.Wpf/1.1.39": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-8PZKqw9QOcu42xk8puY4P1+EXHL9YGOR9b7qhaYx5cILHul456H073tj99vyPcCt0W0781T9RwHqkx507ZyUpQ==",
+      "path": "microsoft.xaml.behaviors.wpf/1.1.39",
+      "hashPath": "microsoft.xaml.behaviors.wpf.1.1.39.nupkg.sha512"
     },
     "NAudio/2.1.0": {
       "type": "package",
