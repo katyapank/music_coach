@@ -24,6 +24,7 @@ namespace OSNK_1_wpf
     public partial class songsList : Window
     {
         public string chosenSongPath = "";
+        string[] files;
         class Songs
         {
             public Songs(string Song, int Level)
@@ -49,7 +50,7 @@ namespace OSNK_1_wpf
                 }
             }
 
-            string[] files = Directory.GetFiles("songs");
+            files = Directory.GetFiles("songs");
 
             foreach (var file in files)
             {
@@ -71,7 +72,9 @@ namespace OSNK_1_wpf
         {
             int index = songL.SelectedIndex;
 
-            //MessageBox.Show(songL.Columns[0].GetCellContent(songL.Items[index]));
+            chosenSongPath = files[index];
+
+            this.Close();
 
         }
     }

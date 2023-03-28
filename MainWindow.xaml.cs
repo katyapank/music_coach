@@ -36,9 +36,10 @@ namespace OSNK_1_wpf
         WaveIn waveIn;
         private List<double> all_freqs = new List<double>();
         bool recording_new_song = false;
-        bool sing_a_song = false;
+        bool sing_a_song = true;
         int count = 0;
-        System.Media.SoundPlayer sp = new System.Media.SoundPlayer("back2.wav");
+        string chosenPath = "";
+        System.Media.SoundPlayer sp;
 
         List<string> notes = new List<string>();
         List<double> noteVal = new List<double>();
@@ -117,6 +118,7 @@ namespace OSNK_1_wpf
             {
                 if (rec == false)
                 {
+                    menuB.IsEnabled = false;
                     rec = true;
                     if (recording_new_song)
                         all_freqs.Clear();
@@ -133,8 +135,10 @@ namespace OSNK_1_wpf
                         
                     }
                     if (recording_new_song || sing_a_song)
+                    {
+                        sp = new System.Media.SoundPlayer(chosenPath);
                         sp.Play();
-
+                    }
 
                     this.waveIn = new WaveIn();
                     this.waveIn.DeviceNumber = 0;
@@ -146,6 +150,7 @@ namespace OSNK_1_wpf
                 }
                 else
                 {
+                    menuB.IsEnabled = true;
                     if (sing_a_song || recording_new_song)
                         sp.Stop();
 
@@ -160,7 +165,10 @@ namespace OSNK_1_wpf
             else if (((Button)e.OriginalSource).Name == "menuB")
             {
                 songsList songMenu = new songsList();
-                songMenu.Show();
+                songMenu.ShowDialog();
+                chosenPath = songMenu.chosenSongPath;
+                string k = chosenPath.Substring(chosenPath.IndexOf('\\') + 1);
+                menuB.Content = k.Substring(0, k.IndexOf('_'));
             }
         }
         void waveIn_DataAvailable(object sender, WaveInEventArgs e)
