@@ -19,7 +19,7 @@ using ZedGraph;
 using System.IO;
 using System.Diagnostics.Metrics;
 using System.Diagnostics;
-
+using System.Windows.Forms.Design;
 
 namespace OSNK_1_wpf
 {
@@ -44,6 +44,30 @@ namespace OSNK_1_wpf
         List<string> notes = new List<string>();
         List<double> noteVal = new List<double>();
         bool noteMode = true;
+
+
+        private class TF{
+            public double x=0;
+            public double y=0;
+        }
+
+        TF tf = new TF();
+        Ellipse step = new Ellipse();
+        double zer = 0;
+        double ma = 0;
+
+        private double toCoord(double fr, double zeroCoord, double maxCoord)
+        {
+            //return fr * maxCoord / 2000 + zeroCoord;
+            return zeroCoord - (zeroCoord - maxCoord) * fr / 2000;
+        }
+
+        private void moveY(double fr, double zeroCoord, double maxCoord)
+        {
+            double newcoord = toCoord(fr, zeroCoord, maxCoord);
+            if (newcoord <= zeroCoord && newcoord >= maxCoord)
+                Canvas.SetTop(step, (newcoord - tf.y));
+        }
 
         public MainWindow()
         {
@@ -88,6 +112,30 @@ namespace OSNK_1_wpf
 
                 }
             }
+
+            
+            step.Width = 10;
+            step.Height = 3;
+            step.VerticalAlignment = VerticalAlignment.Top;
+            step.HorizontalAlignment = HorizontalAlignment.Left;
+            //step.Fill = Brushes.Black;
+            step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
+            //step.Stroke = Brushes.Red;
+            //step.StrokeThickness = 3;
+
+            step.Margin = new Thickness(bord.Margin.Left*1.5, bord.Margin.Top+bord.Height-(step.Width/2), 0, 0);
+            canv.Children.Add(step);
+
+            tf.x = bord.Margin.Left * 1.5;
+            tf.y = bord.Margin.Top + bord.Height - (step.Width / 2);
+
+            zer = bord.Margin.Top + bord.Height - (step.Width / 2);
+            ma = bord.Margin.Top + (step.Width / 2);
+
+            
+
+            //Canvas.SetTop(step, 0);
+
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -118,7 +166,23 @@ namespace OSNK_1_wpf
             {
                 if (rec == false)
                 {
+                    if (checkMode.IsChecked == true)
+                    {
+                        sing_a_song = false;
+                    }
+                    else
+                    {
+                        if (chosenPath=="")
+                        {
+                            MessageBox.Show("Песня не выбрана", "Ошибка");
+                            return;
+                        }
+                        sing_a_song=true;
+                    }
+
+
                     menuB.IsEnabled = false;
+                    checkMode.IsEnabled = false;
                     rec = true;
                     if (recording_new_song)
                         all_freqs.Clear();
@@ -151,6 +215,7 @@ namespace OSNK_1_wpf
                 else
                 {
                     menuB.IsEnabled = true;
+                    checkMode.IsEnabled = true;
                     if (sing_a_song || recording_new_song)
                         sp.Stop();
 
@@ -159,7 +224,8 @@ namespace OSNK_1_wpf
                     ((Button)e.OriginalSource).Content = "Начать запись";
                     tempL.Foreground = new SolidColorBrush(Colors.Black);
 
-                    File.WriteAllLines(chosenPath.Substring(0,chosenPath.Length-4)+".txt", all_freqs.ConvertAll(x => x.ToString()));
+                    if (recording_new_song)
+                        File.WriteAllLines(chosenPath.Substring(0,chosenPath.Length-4)+".txt", all_freqs.ConvertAll(x => x.ToString()));
                 }
             }
             else if (((Button)e.OriginalSource).Name == "menuB")
@@ -209,8 +275,8 @@ namespace OSNK_1_wpf
         }
         private void write(Complex[] signal)
         {
-            var sw = new Stopwatch();
-            sw.Start();
+            //var sw = new Stopwatch();
+            //sw.Start();
             PointPairList list1 = new PointPairList();
             int max_index = 0;
             double freq = 0;
@@ -228,8 +294,19 @@ namespace OSNK_1_wpf
                 }
             }
 
+            try
+            {
 
-            freq = list1[max_index].X;  //  иногда здесь выдаёт ошибку ... 
+                freq = list1[max_index].X;  //  иногда здесь выдаёт ошибку ... 
+            }
+            catch
+            {
+                MessageBox.Show("Здесь была бы ошибка...");
+                return;
+            }
+
+            
+
             string s = "";
             if (!noteMode)
                 s = ((int)freq).ToString();
@@ -242,11 +319,13 @@ namespace OSNK_1_wpf
             if (list1[max_index].Y > 0.001)
             {
                 tempL.Content = s;
+                moveY(freq, zer, ma);
                 if (recording_new_song)
                     all_freqs.Add(freq);
             }
             else
             {
+                moveY(0, zer, ma);
                 tempL.Content = "-";
                 if (recording_new_song)
                     all_freqs.Add(0);
@@ -289,8 +368,8 @@ namespace OSNK_1_wpf
                     tempL.Foreground = new SolidColorBrush(Colors.Red);
             }
 
-            sw.Stop();
-            Console.WriteLine(sw.Elapsed);
+            //sw.Stop();
+            //Console.WriteLine(sw.Elapsed);
         }
     }
 }
