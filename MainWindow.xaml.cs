@@ -52,11 +52,11 @@ namespace OSNK_1_wpf
         }
 
         TF tf = new TF();
-        Ellipse step = new Ellipse();
+        Rectangle step = new Rectangle();
         double zer = 0;
         double ma = 0;
 
-        Ellipse next = new Ellipse();
+        Rectangle next = new Rectangle();
 
         private double toCoord(double fr, double zeroCoord, double maxCoord)
         {
@@ -64,7 +64,7 @@ namespace OSNK_1_wpf
             return zeroCoord - (zeroCoord - maxCoord) * fr / 2000;
         }
 
-        private void moveY(double fr, double zeroCoord, double maxCoord, Ellipse temp)
+        private void moveY(double fr, double zeroCoord, double maxCoord, Rectangle temp)
         {
             double newcoord = toCoord(fr, zeroCoord, maxCoord);
             if (newcoord <= zeroCoord && newcoord >= maxCoord)
@@ -116,20 +116,20 @@ namespace OSNK_1_wpf
             }
 
             
-            step.Width = 10;
-            step.Height = 3;
+            step.Width = 50;
+            step.Height = 10;
             step.VerticalAlignment = VerticalAlignment.Top;
             step.HorizontalAlignment = HorizontalAlignment.Left;
             step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
 
-            step.Margin = new Thickness(bord.Margin.Left*1.5, bord.Margin.Top+bord.Height-(step.Width/2), 0, 0);
+            step.Margin = new Thickness(bord.Margin.Left*1.5, bord.Margin.Top+bord.Height-(step.Height), 0, 0);
             canv.Children.Add(step);
 
             tf.x = bord.Margin.Left * 1.5;
-            tf.y = bord.Margin.Top + bord.Height - (step.Width / 2);
+            tf.y = bord.Margin.Top + bord.Height - (step.Height);
 
-            zer = bord.Margin.Top + bord.Height - (step.Width / 2);
-            ma = bord.Margin.Top + (step.Width / 2);
+            zer = bord.Margin.Top + bord.Height - (step.Height);
+            ma = bord.Margin.Top + (step.Height);
 
             
 
@@ -161,13 +161,13 @@ namespace OSNK_1_wpf
 
         private void addPoints()
         {
-            next.Width = 10;
-            next.Height = 1;
+            next.Width = 50;
+            next.Height = 10;
             next.VerticalAlignment = VerticalAlignment.Top;
             next.HorizontalAlignment = HorizontalAlignment.Left;
             next.Fill = Brushes.Black;
 
-            next.Margin = new Thickness(bord.Margin.Left * 1.5+10, bord.Margin.Top + bord.Height - (next.Width / 2), 0, 0);
+            next.Margin = new Thickness(bord.Margin.Left * 1.5+70, bord.Margin.Top + bord.Height - (next.Height), 0, 0);
             canv.Children.Add(next);
         }
 
@@ -236,8 +236,11 @@ namespace OSNK_1_wpf
 
                     if (sing_a_song)
                     {
-
+                        moveY(0, zer, ma, step);
                         canv.Children.Remove(next);
+                        step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
+                        targetTB.Text = "";
+                        tempL.Foreground = new SolidColorBrush(Colors.Black);
                     }
 
                     ((Button)e.OriginalSource).Content = "Начать запись";
@@ -375,17 +378,29 @@ namespace OSNK_1_wpf
             {
                 if (Math.Abs(freq - Convert.ToInt16(targetTB.Text)) < 15){
                     tempL.Foreground = new SolidColorBrush(Colors.Green);
+                    step.Fill = Brushes.Green;
+                    next.Fill = Brushes.Green;
                 }
                 else
                 {
                     tempL.Foreground = new SolidColorBrush(Colors.Red);
+                    step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
+                    next.Fill = Brushes.Black;
                 }
             }
-            else if (sing_a_song && all_freqs.Count >= count) { 
-                if (Math.Abs(all_freqs[count-1] - freq) < 20)
+            else if (sing_a_song && all_freqs.Count >= count) {
+                if (Math.Abs(all_freqs[count - 1] - freq) < 20)
+                {
                     tempL.Foreground = new SolidColorBrush(Colors.Green);
+                    step.Fill = Brushes.Green;
+                    next.Fill = Brushes.Green;
+                }
                 else
+                {
                     tempL.Foreground = new SolidColorBrush(Colors.Red);
+                    step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
+                    next.Fill = Brushes.Black;
+                }
             }
 
             //sw.Stop();
