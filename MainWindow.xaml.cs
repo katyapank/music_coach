@@ -35,11 +35,13 @@ namespace OSNK_1_wpf
         static double Fn = Fs / 2;// Частота Найквиста
         WaveIn waveIn;
         private List<double> all_freqs = new List<double>();
-        bool recording_new_song = false;
+        bool recording_new_song = true;
         bool sing_a_song = false;
         int count = 0;
         string chosenPath = "";
         System.Media.SoundPlayer sp;
+        int mark = 0;
+        int maxmark = 0;
 
         List<string> notes = new List<string>();
         List<double> noteVal = new List<double>();
@@ -200,6 +202,8 @@ namespace OSNK_1_wpf
 
                     if (sing_a_song)
                     {
+                        mark = 0;
+                        maxmark = 0;
                         addPoints();
                         count = 0;
                         all_freqs.Clear();
@@ -236,6 +240,9 @@ namespace OSNK_1_wpf
 
                     if (sing_a_song)
                     {
+                        MessageBox.Show("Ваша оценка: " + (mark * 100 / maxmark).ToString() + " баллов из 100", "Результат");
+                        mark = 0;
+                        maxmark = 0;
                         moveY(0, zer, ma, step);
                         canv.Children.Remove(next);
                         step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
@@ -380,12 +387,15 @@ namespace OSNK_1_wpf
                     tempL.Foreground = new SolidColorBrush(Colors.Green);
                     step.Fill = Brushes.Green;
                     next.Fill = Brushes.Green;
+                    ++mark;
+                    ++maxmark;
                 }
                 else
                 {
                     tempL.Foreground = new SolidColorBrush(Colors.Red);
                     step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
                     next.Fill = Brushes.Black;
+                    ++maxmark;
                 }
             }
             else if (sing_a_song && all_freqs.Count >= count) {
@@ -394,14 +404,19 @@ namespace OSNK_1_wpf
                     tempL.Foreground = new SolidColorBrush(Colors.Green);
                     step.Fill = Brushes.Green;
                     next.Fill = Brushes.Green;
+                    ++mark;
+                    ++maxmark;
                 }
                 else
                 {
                     tempL.Foreground = new SolidColorBrush(Colors.Red);
                     step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
                     next.Fill = Brushes.Black;
+                    ++maxmark;
                 }
             }
+
+            
 
             //sw.Stop();
             //Console.WriteLine(sw.Elapsed);
