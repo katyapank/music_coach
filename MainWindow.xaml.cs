@@ -36,7 +36,7 @@ namespace OSNK_1_wpf
         WaveIn waveIn;
         private List<double> all_freqs = new List<double>();
         bool recording_new_song = false;
-        bool sing_a_song = true;
+        bool sing_a_song = false;
         int count = 0;
         string chosenPath = "";
         System.Media.SoundPlayer sp;
@@ -56,17 +56,19 @@ namespace OSNK_1_wpf
         double zer = 0;
         double ma = 0;
 
+        Ellipse next = new Ellipse();
+
         private double toCoord(double fr, double zeroCoord, double maxCoord)
         {
             //return fr * maxCoord / 2000 + zeroCoord;
             return zeroCoord - (zeroCoord - maxCoord) * fr / 2000;
         }
 
-        private void moveY(double fr, double zeroCoord, double maxCoord)
+        private void moveY(double fr, double zeroCoord, double maxCoord, Ellipse temp)
         {
             double newcoord = toCoord(fr, zeroCoord, maxCoord);
             if (newcoord <= zeroCoord && newcoord >= maxCoord)
-                Canvas.SetTop(step, (newcoord - tf.y));
+                Canvas.SetTop(temp, (newcoord - tf.y));
         }
 
         public MainWindow()
@@ -118,10 +120,7 @@ namespace OSNK_1_wpf
             step.Height = 3;
             step.VerticalAlignment = VerticalAlignment.Top;
             step.HorizontalAlignment = HorizontalAlignment.Left;
-            //step.Fill = Brushes.Black;
             step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
-            //step.Stroke = Brushes.Red;
-            //step.StrokeThickness = 3;
 
             step.Margin = new Thickness(bord.Margin.Left*1.5, bord.Margin.Top+bord.Height-(step.Width/2), 0, 0);
             canv.Children.Add(step);
@@ -160,6 +159,18 @@ namespace OSNK_1_wpf
 
         }
 
+        private void addPoints()
+        {
+            next.Width = 10;
+            next.Height = 1;
+            next.VerticalAlignment = VerticalAlignment.Top;
+            next.HorizontalAlignment = HorizontalAlignment.Left;
+            next.Fill = Brushes.Black;
+
+            next.Margin = new Thickness(bord.Margin.Left * 1.5+10, bord.Margin.Top + bord.Height - (next.Width / 2), 0, 0);
+            canv.Children.Add(next);
+        }
+
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             if (((Button)e.OriginalSource).Name == "startB")
@@ -189,6 +200,7 @@ namespace OSNK_1_wpf
 
                     if (sing_a_song)
                     {
+                        addPoints();
                         count = 0;
                         all_freqs.Clear();
                         StreamReader sr = new StreamReader(chosenPath.Substring(0, chosenPath.Length - 4) + ".txt");
@@ -221,6 +233,13 @@ namespace OSNK_1_wpf
 
                     rec = false;
                     this.stop_recording();
+
+                    if (sing_a_song)
+                    {
+
+                        canv.Children.Remove(next);
+                    }
+
                     ((Button)e.OriginalSource).Content = "Начать запись";
                     tempL.Foreground = new SolidColorBrush(Colors.Black);
 
@@ -319,13 +338,13 @@ namespace OSNK_1_wpf
             if (list1[max_index].Y > 0.001)
             {
                 tempL.Content = s;
-                moveY(freq, zer, ma);
+                moveY(freq, zer, ma, step);
                 if (recording_new_song)
                     all_freqs.Add(freq);
             }
             else
             {
-                moveY(0, zer, ma);
+                moveY(0, zer, ma, step);
                 tempL.Content = "-";
                 if (recording_new_song)
                     all_freqs.Add(0);
@@ -343,6 +362,7 @@ namespace OSNK_1_wpf
                     else
                         targetTB.Text = "0";
                 }
+                moveY(all_freqs[count], zer, ma, next);
             }
             else if (count == all_freqs.Count-1)
             {
