@@ -28,14 +28,16 @@ namespace OSNK_1_wpf
     /// </summary>
     public partial class MainWindow : Window
     {
+        int intervalMode;
         bool rec = false;
+        bool isLyrics = false;
         static double Fs = 48000; // Частота дискретизации !В данной программе ТОЛЬКО целые числа
         static double T = 1.0 / Fs; // Шаг дискретизации
         static int N; //Длина сигнала (точек)
         static double Fn = Fs / 2;// Частота Найквиста
         WaveIn waveIn;
         private List<double> all_freqs = new List<double>();
-        bool recording_new_song = true;
+        bool recording_new_song = false;
         bool sing_a_song = false;
         int count = 0;
         string chosenPath = "";
@@ -76,6 +78,7 @@ namespace OSNK_1_wpf
         public MainWindow()
         {
             InitializeComponent();
+            lyrics.Text = "Текст песни отсутствует";
             foreach (UIElement el in grid1.Children)
             {
                 if (el is Button)
@@ -218,7 +221,17 @@ namespace OSNK_1_wpf
                     {
                         sp = new System.Media.SoundPlayer(chosenPath);
                         sp.Play();
+                        if (isLyrics == true)
+                        {
+                            //lyrics.ScrollToEnd();
+                        }
                     }
+                    else
+                    {
+                        intervalMode = intervalCB.SelectedIndex;
+                    }
+
+                   
 
                     this.waveIn = new WaveIn();
                     this.waveIn.DeviceNumber = 0;
@@ -240,7 +253,9 @@ namespace OSNK_1_wpf
 
                     if (sing_a_song)
                     {
-                        MessageBox.Show("Ваша оценка: " + (mark * 100 / maxmark).ToString() + " баллов из 100", "Результат");
+                        double newmark = (mark * 100 / maxmark) * 3;
+                        if (newmark > 100) newmark = 100;
+                        MessageBox.Show("Ваша оценка: " + Convert.ToInt16(newmark).ToString()  + " баллов из 100", "Результат");
                         mark = 0;
                         maxmark = 0;
                         moveY(0, zer, ma, step);
@@ -248,6 +263,14 @@ namespace OSNK_1_wpf
                         step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
                         targetTB.Text = "";
                         tempL.Foreground = new SolidColorBrush(Colors.Black);
+                        tempL.Content = "-";
+                    }
+                    else if (!sing_a_song && !recording_new_song)
+                    {
+                        moveY(0, zer, ma, step);
+                        step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
+                        tempL.Foreground = new SolidColorBrush(Colors.Black);
+                        tempL.Content = "-";
                     }
 
                     ((Button)e.OriginalSource).Content = "Начать запись";
@@ -266,6 +289,29 @@ namespace OSNK_1_wpf
                 {
                     string k = chosenPath.Substring(chosenPath.IndexOf('\\') + 1);
                     menuB.Content = k.Substring(0, k.IndexOf('_'));
+
+                    lyrics.Text = "";
+                    try
+                    {
+                        StreamReader sr = new StreamReader(chosenPath.Substring(0, chosenPath.Length - 4) + ".log");
+                        bool cas = false;
+                        while (!sr.EndOfStream)
+                        {
+                            if (cas == false)
+                            {
+                                cas = true;
+                                lyrics.Text += sr.ReadLine();
+                            }
+                            lyrics.Text += "\n" + sr.ReadLine();
+                        }
+                        isLyrics = true;
+
+                    }
+                    catch
+                    {
+                        lyrics.Text = "Текст песни отсутствует";
+                        isLyrics = false;
+                    }
                 }
             }
         }
@@ -330,7 +376,7 @@ namespace OSNK_1_wpf
             }
             catch
             {
-                MessageBox.Show("Здесь была бы ошибка...");
+                //MessageBox.Show("Здесь была бы ошибка...");
                 return;
             }
 
@@ -358,6 +404,7 @@ namespace OSNK_1_wpf
                 tempL.Content = "-";
                 if (recording_new_song)
                     all_freqs.Add(0);
+                
             }
 
             if (sing_a_song && count < all_freqs.Count)
@@ -381,29 +428,151 @@ namespace OSNK_1_wpf
 
             ++count;
 
-            if (!sing_a_song && !recording_new_song && targetTB.Text != "" && !noteMode)
+            double allowableDifference = 0.60575;
+
+            double m = 41.21;
+
+            while (m < 2638)
             {
-                if (Math.Abs(freq - Convert.ToInt16(targetTB.Text)) < 15){
+                if (freq >= m)
+                    allowableDifference *= 2;
+                else
+                    break;
+                if (m > 328 && m < 650) 
+                    allowableDifference += 0.15;
+                m *= 2;
+            }
+
+            if (!sing_a_song && !recording_new_song && targetTB.Text != "")
+            {
+                intervalMode = intervalCB.SelectedIndex;
+                double targ = 0;
+                if (noteMode)
+                {
+                    if (targetTB.Text == tempL.Content.ToString())
+                    {
+                        tempL.Foreground = new SolidColorBrush(Colors.Green);
+                        step.Fill = Brushes.Green;
+                    }
+                    else if (intervalMode != 0 && list1[max_index].Y > 0.001)
+                    {
+                        int temp = notes.IndexOf(targetTB.Text);
+                        double tempD = 0;
+                        if (temp != -1 && freq>20)
+                        {
+                            tempD = noteVal[temp];
+
+                            double k = noteVal.OrderBy(x => Math.Abs(x - freq)).ElementAt(0);
+                            string freqstr = notes[noteVal.IndexOf(k)];
+                            k = noteVal[notes.IndexOf(freqstr)];
+
+                            double bv = 0;
+                            double sv = 0;
+                            if (k > tempD)
+                            { bv = k; sv = tempD; }
+                            else
+                            { bv = tempD; sv = k; }
+                            if (intervalMode==1 && Math.Abs(bv/sv - 1.25) < 0.015)
+                            {
+                                tempL.Foreground = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                                step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                            }
+                            else if (intervalMode == 2 && Math.Abs(bv / sv - 1.2) < 0.015)
+                            {
+                                tempL.Foreground = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                                step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                            }
+                            else if (intervalMode == 3 && Math.Abs(bv / sv - 1.33) < 0.015)
+                            {
+                                tempL.Foreground = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                                step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                            }
+                            else if (intervalMode == 4 && Math.Abs(bv / sv - 1.5) < 0.015)
+                            {
+                                tempL.Foreground = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                                step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                            }
+                            else
+                            {
+                                tempL.Foreground = new SolidColorBrush(Colors.Red);
+                                step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
+                            }
+                        }
+                        else
+                        {
+                            tempL.Foreground = new SolidColorBrush(Colors.Red);
+                            step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
+                        }
+                    }
+                    else
+                    {
+                        tempL.Foreground = new SolidColorBrush(Colors.Red);
+                        step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        targ = Convert.ToInt16(targetTB.Text);
+                    }
+                    catch
+                    {
+                        targetTB.Text = "0";
+                        targ = 0;
+                    }
+
+                    if (Math.Abs(freq - targ) < allowableDifference)
+                    {
+                        tempL.Foreground = new SolidColorBrush(Colors.Green);
+                        step.Fill = Brushes.Green;
+                    }
+
+                    //else if (compatibilityMode)
+                    //{
+                    //    double bv = 1;
+                    //    double lv = 1;
+                    //    if (freq > targ) { bv = freq; lv = targ; }
+                    //    else { bv = targ; lv = freq; }
+
+                    //    if (Math.Abs(bv / lv - 2) < 0.1 || Math.Abs(bv / lv - 1.5) < 0.1 || Math.Abs(bv / lv - 4/3) < 0.1 || Math.Abs(bv / lv - 5/4) < 0.1 || Math.Abs(bv / lv - 6/5) < 0.1) 
+                    //    {
+                    //        tempL.Foreground = new SolidColorBrush(Colors.Pink);
+                    //        step.Fill = Brushes.Pink;
+                    //    }
+
+                    //}
+                    
+                    else
+                    {
+                        tempL.Foreground = new SolidColorBrush(Colors.Red);
+                        step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
+                    }
+                }
+            }
+            else if (sing_a_song && all_freqs.Count >= count) {
+
+                double k = noteVal.OrderBy(x => Math.Abs(x - freq)).ElementAt(0);
+                string freqstr = notes[noteVal.IndexOf(k)];
+                k = noteVal[notes.IndexOf(freqstr)];
+
+                double k1 = noteVal.OrderBy(x => Math.Abs(x - all_freqs[count - 1])).ElementAt(0);
+                string freqstr1 = notes[noteVal.IndexOf(k1)];
+                k1 = noteVal[notes.IndexOf(freqstr1)];
+
+                if (Math.Abs(all_freqs[count - 1] - freq) < allowableDifference)
+                {
                     tempL.Foreground = new SolidColorBrush(Colors.Green);
                     step.Fill = Brushes.Green;
                     next.Fill = Brushes.Green;
                     ++mark;
                     ++maxmark;
                 }
-                else
+                else if (Math.Abs(k1 - k) < 0.01 && freq>20 && list1[max_index].Y > 0.001 /*&& Math.Abs(freq-k) < allowableDifference*2*/)
                 {
-                    tempL.Foreground = new SolidColorBrush(Colors.Red);
-                    step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
-                    next.Fill = Brushes.Black;
-                    ++maxmark;
-                }
-            }
-            else if (sing_a_song && all_freqs.Count >= count) {
-                if (Math.Abs(all_freqs[count - 1] - freq) < 20)
-                {
-                    tempL.Foreground = new SolidColorBrush(Colors.Green);
-                    step.Fill = Brushes.Green;
-                    next.Fill = Brushes.Green;
+                    tempL.Foreground = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                    step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                    next.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
                     ++mark;
                     ++maxmark;
                 }

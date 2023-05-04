@@ -6,19 +6,26 @@
         xmlns:local="clr-namespace:OSNK_1_wpf"
         mc:Ignorable="d"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        Title="Тренажёр" Height="450" Width="400" ResizeMode="CanMinimize">
+        Title="Тренажёр" Height="606" Width="400" ResizeMode="CanMinimize">
     <Grid x:Name="grid1" Background="White">
-        <TextBox x:Name="targetTB" HorizontalAlignment="Right" Margin="0,87,40,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="82" Height="51" HorizontalContentAlignment="Right"/>
-        <Button x:Name="menuB" Content="Выбрать песню" HorizontalAlignment="Center" Margin="0,10,0,0" VerticalAlignment="Top" Width="320" Height="45"/>
-        <Label x:Name="tempL" Content="-" HorizontalAlignment="Right" Margin="0,177,40,0" VerticalAlignment="Top" Height="50" Width="82" HorizontalContentAlignment="Right"/>
-        <Button x:Name="startB" Content="Начать запись" HorizontalAlignment="Center" Margin="0,305,0,0" VerticalAlignment="Top" Width="320" Height="50" Cursor="Hand" />
-        <ComboBox x:Name="modeCB" HorizontalAlignment="Right" Margin="0,225,40,0" VerticalAlignment="Top" Width="81" Height="23" SelectedIndex="0">
+        <TextBox x:Name="targetTB" HorizontalAlignment="Right" Margin="0,95,40,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="82" Height="23" HorizontalContentAlignment="Right"/>
+        <Button x:Name="menuB" Content="Выбрать песню" HorizontalAlignment="Center" Margin="0,10,0,0" VerticalAlignment="Top" Width="320" Height="45" Cursor="Hand"/>
+        <Label x:Name="tempL" Content="-" HorizontalAlignment="Right" Margin="0,149,40,0" VerticalAlignment="Top" Height="50" Width="82" HorizontalContentAlignment="Right"/>
+        <Button x:Name="startB" Content="Начать запись" HorizontalAlignment="Center" Margin="0,491,0,0" VerticalAlignment="Top" Width="320" Height="50" Cursor="Hand" />
+        <ComboBox x:Name="modeCB" HorizontalAlignment="Right" Margin="0,191,40,0" VerticalAlignment="Top" Width="81" Height="23" SelectedIndex="0">
             <ComboBoxItem Content="Ноты"/>
             <ComboBoxItem Content="Частоты"/>
         </ComboBox>
         <Border x:Name="bord" BorderBrush="White" BorderThickness="1" Margin="40,87,0,0" HorizontalAlignment="Left" Width="160" VerticalAlignment="Top" Height="188" Background="#FFE5E5E5"/>
-        <CheckBox x:Name="checkMode" Content="Режим тюнера" HorizontalAlignment="Right" VerticalAlignment="Top" IsChecked="True" Margin="0,370,40,0"/>
-        <Canvas x:Name="canv" Margin="0,0,0,-1"/>
-
+        <CheckBox x:Name="checkMode" Content="Режим тюнера" HorizontalAlignment="Right" VerticalAlignment="Top" IsChecked="True" Margin="0,454,40,0"/>
+        <Canvas x:Name="canv" Margin="0,0,0,-1"></Canvas>
+        <TextBox x:Name="lyrics" Canvas.Left="40" TextWrapping="Wrap" Text="" Canvas.Top="296" Width="320" HorizontalAlignment="Center" VerticalAlignment="Top" Height="137" Margin="0,304,0,0" FontSize="16" VerticalScrollBarVisibility="Auto" VirtualizingPanel.ScrollUnit="Pixel"/>
+        <ComboBox x:Name="intervalCB" HorizontalAlignment="Right" Margin="0,248,40,0" VerticalAlignment="Top" Width="81" Height="23" SelectedIndex="0">
+            <ComboBoxItem Content="Октава"/>
+            <ComboBoxItem Content="Большая терция"/>
+            <ComboBoxItem Content="Малая терция"/>
+            <ComboBoxItem Content="Кварта"/>
+            <ComboBoxItem Content="Квинта"/>
+        </ComboBox>
     </Grid>
 </Window>
