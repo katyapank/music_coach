@@ -17,10 +17,6 @@ using System.Windows.Shapes;
 
 namespace OSNK_1_wpf
 {
-    /// <summary>
-    /// Логика взаимодействия для songsList.xaml
-    /// </summary>
-    ///
     public partial class songsList : Window
     {
         public string chosenSongPath = "";
@@ -37,7 +33,6 @@ namespace OSNK_1_wpf
             public string Song { get; set; }
             public int Level { get; set; }
         }
-        //List<Songs> songs = new List<Songs>();
         ObservableCollection<Songs> songs = new ObservableCollection<Songs>();
         public songsList()
         {
@@ -68,19 +63,14 @@ namespace OSNK_1_wpf
                 }
 
             }
-
             songL.ItemsSource = songs;
-
         }
 
         private void DataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             int index = songL.SelectedIndex;
-
             chosenSongPath = paths[index];
-
             this.Close();
-
         }
     }
 }

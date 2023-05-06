@@ -23,18 +23,15 @@ using System.Windows.Forms.Design;
 
 namespace OSNK_1_wpf
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         int intervalMode;
         bool rec = false;
         bool isLyrics = false;
-        static double Fs = 48000; // Частота дискретизации !В данной программе ТОЛЬКО целые числа
-        static double T = 1.0 / Fs; // Шаг дискретизации
-        static int N; //Длина сигнала (точек)
-        static double Fn = Fs / 2;// Частота Найквиста
+        static double Fs = 48000;
+        static double T = 1.0 / Fs;
+        static int N;
+        static double Fn = Fs / 2;
         WaveIn waveIn;
         private List<double> all_freqs = new List<double>();
         bool recording_new_song = false;
@@ -59,12 +56,10 @@ namespace OSNK_1_wpf
         Rectangle step = new Rectangle();
         double zer = 0;
         double ma = 0;
-
         Rectangle next = new Rectangle();
 
         private double toCoord(double fr, double zeroCoord, double maxCoord)
         {
-            //return fr * maxCoord / 2000 + zeroCoord;
             return zeroCoord - (zeroCoord - maxCoord) * fr / 2000;
         }
 
@@ -136,9 +131,6 @@ namespace OSNK_1_wpf
             zer = bord.Margin.Top + bord.Height - (step.Height);
             ma = bord.Margin.Top + (step.Height);
 
-            
-
-            //Canvas.SetTop(step, 0);
 
         }
 
@@ -231,8 +223,6 @@ namespace OSNK_1_wpf
                         intervalMode = intervalCB.SelectedIndex;
                     }
 
-                   
-
                     this.waveIn = new WaveIn();
                     this.waveIn.DeviceNumber = 0;
                     this.waveIn.DataAvailable += this.waveIn_DataAvailable;
@@ -317,7 +307,6 @@ namespace OSNK_1_wpf
         }
         void waveIn_DataAvailable(object sender, WaveInEventArgs e)
         {
-            //данные из буфера распределяем в массив чтобы в нем они были в формате ?PCM?
             byte[] buffer = e.Buffer;
             N = buffer.Length;
             int bytesRecorded = e.BytesRecorded;
@@ -329,7 +318,6 @@ namespace OSNK_1_wpf
             }
 
             Fourier.Forward(sig, FourierOptions.Matlab);
-            // обнуляем спектр на небольших частотах (там постоянная составляющая и вообще много помех)
             for (int i = 0; i < 35 * sig.Length / Fn; i++)
             {
                 sig[i] = 0;
@@ -338,7 +326,7 @@ namespace OSNK_1_wpf
             write(sig);
 
         }
-        //Окончание записи
+
         private void waveIn_RecordingStopped(object sender, EventArgs e)
         {
             waveIn.Dispose();
@@ -350,8 +338,6 @@ namespace OSNK_1_wpf
         }
         private void write(Complex[] signal)
         {
-            //var sw = new Stopwatch();
-            //sw.Start();
             PointPairList list1 = new PointPairList();
             int max_index = 0;
             double freq = 0;
@@ -372,15 +358,13 @@ namespace OSNK_1_wpf
             try
             {
 
-                freq = list1[max_index].X;  //  иногда здесь выдаёт ошибку ... 
+                freq = list1[max_index].X;
             }
             catch
             {
-                //MessageBox.Show("Здесь была бы ошибка...");
                 return;
             }
 
-            
 
             string s = "";
             if (!noteMode)
@@ -528,21 +512,6 @@ namespace OSNK_1_wpf
                         step.Fill = Brushes.Green;
                     }
 
-                    //else if (compatibilityMode)
-                    //{
-                    //    double bv = 1;
-                    //    double lv = 1;
-                    //    if (freq > targ) { bv = freq; lv = targ; }
-                    //    else { bv = targ; lv = freq; }
-
-                    //    if (Math.Abs(bv / lv - 2) < 0.1 || Math.Abs(bv / lv - 1.5) < 0.1 || Math.Abs(bv / lv - 4/3) < 0.1 || Math.Abs(bv / lv - 5/4) < 0.1 || Math.Abs(bv / lv - 6/5) < 0.1) 
-                    //    {
-                    //        tempL.Foreground = new SolidColorBrush(Colors.Pink);
-                    //        step.Fill = Brushes.Pink;
-                    //    }
-
-                    //}
-                    
                     else
                     {
                         tempL.Foreground = new SolidColorBrush(Colors.Red);
@@ -584,11 +553,6 @@ namespace OSNK_1_wpf
                     ++maxmark;
                 }
             }
-
-            
-
-            //sw.Stop();
-            //Console.WriteLine(sw.Elapsed);
         }
     }
 }
