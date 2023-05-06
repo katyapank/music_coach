@@ -19,35 +19,61 @@ using ZedGraph;
 using System.IO;
 using System.Diagnostics.Metrics;
 using System.Diagnostics;
-
+using System.Windows.Forms.Design;
 
 namespace OSNK_1_wpf
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
+        int intervalMode;
         bool rec = false;
-        static double Fs = 48000; // Частота дискретизации !В данной программе ТОЛЬКО целые числа
-        static double T = 1.0 / Fs; // Шаг дискретизации
-        static int N; //Длина сигнала (точек)
-        static double Fn = Fs / 2;// Частота Найквиста
+        bool isLyrics = false;
+        static double Fs = 48000;
+        static double T = 1.0 / Fs;
+        static int N;
+        static double Fn = Fs / 2;
         WaveIn waveIn;
         private List<double> all_freqs = new List<double>();
         bool recording_new_song = false;
-        bool sing_a_song = true;
+        bool sing_a_song = false;
         int count = 0;
         string chosenPath = "";
         System.Media.SoundPlayer sp;
+        int mark = 0;
+        int maxmark = 0;
 
         List<string> notes = new List<string>();
         List<double> noteVal = new List<double>();
         bool noteMode = true;
 
+
+        private class TF{
+            public double x=0;
+            public double y=0;
+        }
+
+        TF tf = new TF();
+        Rectangle step = new Rectangle();
+        double zer = 0;
+        double ma = 0;
+        Rectangle next = new Rectangle();
+
+        private double toCoord(double fr, double zeroCoord, double maxCoord)
+        {
+            return zeroCoord - (zeroCoord - maxCoord) * fr / 2000;
+        }
+
+        private void moveY(double fr, double zeroCoord, double maxCoord, Rectangle temp)
+        {
+            double newcoord = toCoord(fr, zeroCoord, maxCoord);
+            if (newcoord <= zeroCoord && newcoord >= maxCoord)
+                Canvas.SetTop(temp, (newcoord - tf.y));
+        }
+
         public MainWindow()
         {
             InitializeComponent();
+            lyrics.Text = "Текст песни отсутствует";
             foreach (UIElement el in grid1.Children)
             {
                 if (el is Button)
@@ -88,6 +114,24 @@ namespace OSNK_1_wpf
 
                 }
             }
+
+            
+            step.Width = 50;
+            step.Height = 10;
+            step.VerticalAlignment = VerticalAlignment.Top;
+            step.HorizontalAlignment = HorizontalAlignment.Left;
+            step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
+
+            step.Margin = new Thickness(bord.Margin.Left*1.5, bord.Margin.Top+bord.Height-(step.Height), 0, 0);
+            canv.Children.Add(step);
+
+            tf.x = bord.Margin.Left * 1.5;
+            tf.y = bord.Margin.Top + bord.Height - (step.Height);
+
+            zer = bord.Margin.Top + bord.Height - (step.Height);
+            ma = bord.Margin.Top + (step.Height);
+
+
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -112,19 +156,50 @@ namespace OSNK_1_wpf
 
         }
 
+        private void addPoints()
+        {
+            next.Width = 50;
+            next.Height = 10;
+            next.VerticalAlignment = VerticalAlignment.Top;
+            next.HorizontalAlignment = HorizontalAlignment.Left;
+            next.Fill = Brushes.Black;
+
+            next.Margin = new Thickness(bord.Margin.Left * 1.5+70, bord.Margin.Top + bord.Height - (next.Height), 0, 0);
+            canv.Children.Add(next);
+        }
+
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             if (((Button)e.OriginalSource).Name == "startB")
             {
                 if (rec == false)
                 {
+                    if (checkMode.IsChecked == true)
+                    {
+                        sing_a_song = false;
+                    }
+                    else
+                    {
+                        if (chosenPath=="")
+                        {
+                            MessageBox.Show("Песня не выбрана", "Ошибка");
+                            return;
+                        }
+                        sing_a_song=true;
+                    }
+
+
                     menuB.IsEnabled = false;
+                    checkMode.IsEnabled = false;
                     rec = true;
                     if (recording_new_song)
                         all_freqs.Clear();
 
                     if (sing_a_song)
                     {
+                        mark = 0;
+                        maxmark = 0;
+                        addPoints();
                         count = 0;
                         all_freqs.Clear();
                         StreamReader sr = new StreamReader(chosenPath.Substring(0, chosenPath.Length - 4) + ".txt");
@@ -138,6 +213,14 @@ namespace OSNK_1_wpf
                     {
                         sp = new System.Media.SoundPlayer(chosenPath);
                         sp.Play();
+                        if (isLyrics == true)
+                        {
+                            //lyrics.ScrollToEnd();
+                        }
+                    }
+                    else
+                    {
+                        intervalMode = intervalCB.SelectedIndex;
                     }
 
                     this.waveIn = new WaveIn();
@@ -151,15 +234,40 @@ namespace OSNK_1_wpf
                 else
                 {
                     menuB.IsEnabled = true;
+                    checkMode.IsEnabled = true;
                     if (sing_a_song || recording_new_song)
                         sp.Stop();
 
                     rec = false;
                     this.stop_recording();
+
+                    if (sing_a_song)
+                    {
+                        double newmark = (mark * 100 / maxmark) * 3;
+                        if (newmark > 100) newmark = 100;
+                        MessageBox.Show("Ваша оценка: " + Convert.ToInt16(newmark).ToString()  + " баллов из 100", "Результат");
+                        mark = 0;
+                        maxmark = 0;
+                        moveY(0, zer, ma, step);
+                        canv.Children.Remove(next);
+                        step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
+                        targetTB.Text = "";
+                        tempL.Foreground = new SolidColorBrush(Colors.Black);
+                        tempL.Content = "-";
+                    }
+                    else if (!sing_a_song && !recording_new_song)
+                    {
+                        moveY(0, zer, ma, step);
+                        step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
+                        tempL.Foreground = new SolidColorBrush(Colors.Black);
+                        tempL.Content = "-";
+                    }
+
                     ((Button)e.OriginalSource).Content = "Начать запись";
                     tempL.Foreground = new SolidColorBrush(Colors.Black);
 
-                    File.WriteAllLines(chosenPath.Substring(0,chosenPath.Length-4)+".txt", all_freqs.ConvertAll(x => x.ToString()));
+                    if (recording_new_song)
+                        File.WriteAllLines(chosenPath.Substring(0,chosenPath.Length-4)+".txt", all_freqs.ConvertAll(x => x.ToString()));
                 }
             }
             else if (((Button)e.OriginalSource).Name == "menuB")
@@ -171,12 +279,34 @@ namespace OSNK_1_wpf
                 {
                     string k = chosenPath.Substring(chosenPath.IndexOf('\\') + 1);
                     menuB.Content = k.Substring(0, k.IndexOf('_'));
+
+                    lyrics.Text = "";
+                    try
+                    {
+                        StreamReader sr = new StreamReader(chosenPath.Substring(0, chosenPath.Length - 4) + ".log");
+                        bool cas = false;
+                        while (!sr.EndOfStream)
+                        {
+                            if (cas == false)
+                            {
+                                cas = true;
+                                lyrics.Text += sr.ReadLine();
+                            }
+                            lyrics.Text += "\n" + sr.ReadLine();
+                        }
+                        isLyrics = true;
+
+                    }
+                    catch
+                    {
+                        lyrics.Text = "Текст песни отсутствует";
+                        isLyrics = false;
+                    }
                 }
             }
         }
         void waveIn_DataAvailable(object sender, WaveInEventArgs e)
         {
-            //данные из буфера распределяем в массив чтобы в нем они были в формате ?PCM?
             byte[] buffer = e.Buffer;
             N = buffer.Length;
             int bytesRecorded = e.BytesRecorded;
@@ -188,7 +318,6 @@ namespace OSNK_1_wpf
             }
 
             Fourier.Forward(sig, FourierOptions.Matlab);
-            // обнуляем спектр на небольших частотах (там постоянная составляющая и вообще много помех)
             for (int i = 0; i < 35 * sig.Length / Fn; i++)
             {
                 sig[i] = 0;
@@ -197,7 +326,7 @@ namespace OSNK_1_wpf
             write(sig);
 
         }
-        //Окончание записи
+
         private void waveIn_RecordingStopped(object sender, EventArgs e)
         {
             waveIn.Dispose();
@@ -209,8 +338,6 @@ namespace OSNK_1_wpf
         }
         private void write(Complex[] signal)
         {
-            var sw = new Stopwatch();
-            sw.Start();
             PointPairList list1 = new PointPairList();
             int max_index = 0;
             double freq = 0;
@@ -228,8 +355,17 @@ namespace OSNK_1_wpf
                 }
             }
 
+            try
+            {
 
-            freq = list1[max_index].X;
+                freq = list1[max_index].X;
+            }
+            catch
+            {
+                return;
+            }
+
+
             string s = "";
             if (!noteMode)
                 s = ((int)freq).ToString();
@@ -242,14 +378,17 @@ namespace OSNK_1_wpf
             if (list1[max_index].Y > 0.001)
             {
                 tempL.Content = s;
+                moveY(freq, zer, ma, step);
                 if (recording_new_song)
                     all_freqs.Add(freq);
             }
             else
             {
+                moveY(0, zer, ma, step);
                 tempL.Content = "-";
                 if (recording_new_song)
                     all_freqs.Add(0);
+                
             }
 
             if (sing_a_song && count < all_freqs.Count)
@@ -264,6 +403,7 @@ namespace OSNK_1_wpf
                     else
                         targetTB.Text = "0";
                 }
+                moveY(all_freqs[count], zer, ma, next);
             }
             else if (count == all_freqs.Count-1)
             {
@@ -272,25 +412,147 @@ namespace OSNK_1_wpf
 
             ++count;
 
-            if (!sing_a_song && !recording_new_song && targetTB.Text != "" && !noteMode)
+            double allowableDifference = 0.60575;
+
+            double m = 41.21;
+
+            while (m < 2638)
             {
-                if (Math.Abs(freq - Convert.ToInt16(targetTB.Text)) < 15){
+                if (freq >= m)
+                    allowableDifference *= 2;
+                else
+                    break;
+                if (m > 328 && m < 650) 
+                    allowableDifference += 0.15;
+                m *= 2;
+            }
+
+            if (!sing_a_song && !recording_new_song && targetTB.Text != "")
+            {
+                intervalMode = intervalCB.SelectedIndex;
+                double targ = 0;
+                if (noteMode)
+                {
+                    if (targetTB.Text == tempL.Content.ToString())
+                    {
+                        tempL.Foreground = new SolidColorBrush(Colors.Green);
+                        step.Fill = Brushes.Green;
+                    }
+                    else if (intervalMode != 0 && list1[max_index].Y > 0.001)
+                    {
+                        int temp = notes.IndexOf(targetTB.Text);
+                        double tempD = 0;
+                        if (temp != -1 && freq>20)
+                        {
+                            tempD = noteVal[temp];
+
+                            double k = noteVal.OrderBy(x => Math.Abs(x - freq)).ElementAt(0);
+                            string freqstr = notes[noteVal.IndexOf(k)];
+                            k = noteVal[notes.IndexOf(freqstr)];
+
+                            double bv = 0;
+                            double sv = 0;
+                            if (k > tempD)
+                            { bv = k; sv = tempD; }
+                            else
+                            { bv = tempD; sv = k; }
+                            if (intervalMode==1 && Math.Abs(bv/sv - 1.25) < 0.015)
+                            {
+                                tempL.Foreground = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                                step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                            }
+                            else if (intervalMode == 2 && Math.Abs(bv / sv - 1.2) < 0.015)
+                            {
+                                tempL.Foreground = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                                step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                            }
+                            else if (intervalMode == 3 && Math.Abs(bv / sv - 1.33) < 0.015)
+                            {
+                                tempL.Foreground = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                                step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                            }
+                            else if (intervalMode == 4 && Math.Abs(bv / sv - 1.5) < 0.015)
+                            {
+                                tempL.Foreground = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                                step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                            }
+                            else
+                            {
+                                tempL.Foreground = new SolidColorBrush(Colors.Red);
+                                step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
+                            }
+                        }
+                        else
+                        {
+                            tempL.Foreground = new SolidColorBrush(Colors.Red);
+                            step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
+                        }
+                    }
+                    else
+                    {
+                        tempL.Foreground = new SolidColorBrush(Colors.Red);
+                        step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        targ = Convert.ToInt16(targetTB.Text);
+                    }
+                    catch
+                    {
+                        targetTB.Text = "0";
+                        targ = 0;
+                    }
+
+                    if (Math.Abs(freq - targ) < allowableDifference)
+                    {
+                        tempL.Foreground = new SolidColorBrush(Colors.Green);
+                        step.Fill = Brushes.Green;
+                    }
+
+                    else
+                    {
+                        tempL.Foreground = new SolidColorBrush(Colors.Red);
+                        step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
+                    }
+                }
+            }
+            else if (sing_a_song && all_freqs.Count >= count) {
+
+                double k = noteVal.OrderBy(x => Math.Abs(x - freq)).ElementAt(0);
+                string freqstr = notes[noteVal.IndexOf(k)];
+                k = noteVal[notes.IndexOf(freqstr)];
+
+                double k1 = noteVal.OrderBy(x => Math.Abs(x - all_freqs[count - 1])).ElementAt(0);
+                string freqstr1 = notes[noteVal.IndexOf(k1)];
+                k1 = noteVal[notes.IndexOf(freqstr1)];
+
+                if (Math.Abs(all_freqs[count - 1] - freq) < allowableDifference)
+                {
                     tempL.Foreground = new SolidColorBrush(Colors.Green);
+                    step.Fill = Brushes.Green;
+                    next.Fill = Brushes.Green;
+                    ++mark;
+                    ++maxmark;
+                }
+                else if (Math.Abs(k1 - k) < 0.01 && freq>20 && list1[max_index].Y > 0.001 /*&& Math.Abs(freq-k) < allowableDifference*2*/)
+                {
+                    tempL.Foreground = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                    step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                    next.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFC839");
+                    ++mark;
+                    ++maxmark;
                 }
                 else
                 {
                     tempL.Foreground = new SolidColorBrush(Colors.Red);
+                    step.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF673AB7");
+                    next.Fill = Brushes.Black;
+                    ++maxmark;
                 }
             }
-            else if (sing_a_song && all_freqs.Count >= count) { 
-                if (Math.Abs(all_freqs[count-1] - freq) < 20)
-                    tempL.Foreground = new SolidColorBrush(Colors.Green);
-                else
-                    tempL.Foreground = new SolidColorBrush(Colors.Red);
-            }
-
-            sw.Stop();
-            Console.WriteLine(sw.Elapsed);
         }
     }
 }
